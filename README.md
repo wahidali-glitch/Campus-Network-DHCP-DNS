@@ -1,49 +1,38 @@
-# 🌐 Campus Network with DHCP & DNS Services
+# 🌐 Campus Network — DHCP, DNS & Static Routing
 
-> A simulated multi-site campus network built in **Cisco Packet Tracer**, featuring dynamic IP allocation via DHCP, domain name resolution via DNS, and inter-site connectivity through static routing.
-
----
-
-## 📌 Project Overview
-
-This project simulates a real-world campus network infrastructure for an educational institution. Three geographically separated sites (departments) are interconnected via WAN serial links, with centralized server services providing DHCP and DNS to all connected clients across subnets.
-
-Designed and implemented as part of the **Computer Networks & Data Communications** course at **Shaheed Zulfikar Ali Bhutto Institute of Science & Technology (SZABIST)**.
+> A fully simulated multi-site network built in **Cisco Packet Tracer** — covering dynamic IP allocation, domain name resolution, web hosting, and inter-site WAN connectivity through static routing.
 
 ---
 
-## 🗺️ Network Topology
+## 📸 Network Topology
 
-```
-[Web Server]  [DNS Server]          [DHCP Server]  [PC0]          [PC1]  [PC2]
-      |              |                     |           |              |      |
-   [ Switch0  ]                       [ Switch1  ]              [ Switch2 ]
-         |                                 |                          |
-     [Router0] =====(Se2/0↔Se2/0)===== [Router1] ===(Se3/0↔Se2/0)=== [Router2]
-      Fa0/0                               Fa0/0                       Fa0/0
-   10.10.10.0/8                        20.20.20.0/8                50.50.50.0/8
-                          WAN: 40.40.40.0/8 (R1↔R2)
-```
+![Network Topology](topology%20(2).png)
 
-| Site | Router | LAN Network | Devices |
-|------|--------|-------------|---------|
-| Left (Site A) | Router0 | `10.10.10.0/8` | Web Server, DNS Server |
-| Center (Site B) | Router1 | `20.20.20.0/8` | DHCP Server, PC0 |
-| Right (Site C) | Router2 | `50.50.50.0/8` | PC1, PC2 |
-| WAN (R1↔R2) | — | `40.40.40.0/8` | Router1, Router2 |
+*Three interconnected sites linked via serial WAN links, each with its own subnet and switch — served by centralized DHCP, DNS, and Web servers.*
 
 ---
 
-## 🔧 Technologies & Services
+## 🧠 What This Project Does
 
-| Component | Technology |
-|-----------|------------|
-| Simulation Tool | Cisco Packet Tracer |
-| Dynamic IP Assignment | DHCP (Dynamic Host Configuration Protocol) |
-| Domain Name Resolution | DNS (Domain Name System) |
-| Web Hosting | HTTP Server |
-| Inter-site Routing | Static Routing |
-| WAN Links | Serial (Se2/0, Se3/0) |
+This simulation models how a real-world multi-branch network operates:
+
+- **Site A (Left)** hosts the **Web Server** and **DNS Server**
+- **Site B (Center)** hosts the **DHCP Server** and a client PC
+- **Site C (Right)** has two client PCs that get IPs dynamically
+- All three sites communicate over **WAN serial links** using **static routes**
+- PCs across all sites automatically receive IP addresses from the central DHCP server using **DHCP relay (`ip helper-address`)**
+- Users can browse `www.campus.com` from any PC — DNS resolves it, and the web server responds
+
+---
+
+## 🗺️ Topology Overview
+
+| Site | Router | LAN Subnet | Devices |
+|------|--------|------------|---------|
+| Site A — Left | Router0 | `10.10.10.0/8` | Web Server, DNS Server |
+| Site B — Center | Router1 | `20.20.20.0/8` | DHCP Server, PC0 |
+| Site C — Right | Router2 | `50.50.50.0/8` | PC1, PC2 |
+| WAN Link | R1 ↔ R2 | `40.40.40.0/8` | Router1, Router2 |
 
 ---
 
@@ -51,21 +40,21 @@ Designed and implemented as part of the **Computer Networks & Data Communication
 
 ### Site A — Left LAN (`10.10.10.0/8`)
 
-| Device | IP Address | Subnet Mask | Default Gateway |
-|--------|------------|-------------|-----------------|
+| Device | IP Address | Subnet Mask | Gateway |
+|--------|------------|-------------|---------|
 | Web Server | 10.10.10.2 | 255.0.0.0 | 10.10.10.1 |
 | DNS Server | 10.10.10.3 | 255.0.0.0 | 10.10.10.1 |
 | Router0 (Fa0/0) | 10.10.10.1 | 255.0.0.0 | — |
 
 ### Site B — Center LAN (`20.20.20.0/8`)
 
-| Device | IP Address | Subnet Mask | Default Gateway |
-|--------|------------|-------------|-----------------|
+| Device | IP Address | Subnet Mask | Gateway |
+|--------|------------|-------------|---------|
 | DHCP Server | 20.20.20.2 | 255.0.0.0 | 20.20.20.1 |
-| PC0 | DHCP | 255.0.0.0 | 20.20.20.1 |
+| PC0 | *via DHCP* | 255.0.0.0 | 20.20.20.1 |
 | Router1 (Fa0/0) | 20.20.20.1 | 255.0.0.0 | — |
 
-### WAN Link — Router1 ↔ Router2 (`40.40.40.0/8`)
+### WAN — Router1 ↔ Router2 (`40.40.40.0/8`)
 
 | Device | IP Address | Subnet Mask |
 |--------|------------|-------------|
@@ -74,54 +63,67 @@ Designed and implemented as part of the **Computer Networks & Data Communication
 
 ### Site C — Right LAN (`50.50.50.0/8`)
 
-| Device | IP Address | Subnet Mask | Default Gateway |
-|--------|------------|-------------|-----------------|
-| PC1 | DHCP | 255.0.0.0 | 50.50.50.1 |
-| PC2 | DHCP | 255.0.0.0 | 50.50.50.1 |
+| Device | IP Address | Subnet Mask | Gateway |
+|--------|------------|-------------|---------|
+| PC1 | *via DHCP* | 255.0.0.0 | 50.50.50.1 |
+| PC2 | *via DHCP* | 255.0.0.0 | 50.50.50.1 |
 | Router2 (Fa0/0) | 50.50.50.1 | 255.0.0.0 | — |
 
 ---
 
 ## ⚙️ Key Configurations
 
-### DHCP Relay (ip helper-address)
-Since the DHCP server resides in Site B, routers at Site A and Site C must forward DHCP broadcast requests using:
-```
+### DHCP Relay — `ip helper-address`
+
+The DHCP server lives in Site B. For PCs in Sites A and C to get IPs automatically, their local router interface must forward DHCP broadcasts:
+
+```cisco
 Router(config-if)# ip helper-address 20.20.20.2
 ```
 
-### Static Routing Example (Router0)
-```
-Router0(config)# ip route 20.20.20.0 255.0.0.0 <WAN-next-hop>
-Router0(config)# ip route 50.50.50.0 255.0.0.0 <WAN-next-hop>
+### Static Routing — Router0 Example
+
+```cisco
+Router0(config)# ip route 20.20.20.0 255.0.0.0 <next-hop>
+Router0(config)# ip route 40.40.40.0 255.0.0.0 <next-hop>
+Router0(config)# ip route 50.50.50.0 255.0.0.0 <next-hop>
 ```
 
-### DNS Server
-- Configured at `10.10.10.3`
-- Resolves hostnames (e.g., `www.campus.com`) to the Web Server IP (`10.10.10.2`)
+### DNS Configuration
+
+- DNS Server IP: `10.10.10.3`
+- Record: `www.campus.com` → `10.10.10.2` (Web Server)
+
+### Web Server
+
+- Hosts a simple HTTP page accessible from all sites
+- Reachable via IP or domain name once DNS is configured on client PCs
 
 ---
 
-## 🚀 How to Open
+## 🚀 Getting Started
 
-1. Install **[Cisco Packet Tracer](https://www.netacad.com/courses/packet-tracer)** (version 8.x recommended)
-2. Clone this repository:
+1. Download and install **[Cisco Packet Tracer](https://www.netacad.com/courses/packet-tracer)** (v8.x recommended — free with a Networking Academy account)
+
+2. Clone this repo:
    ```bash
    git clone https://github.com/wahidali-glitch/Campus-Network-DHCP-DNS.git
    ```
-3. Open `DNS_DHCP_by_Static_routing.pkt` in Cisco Packet Tracer
-4. Use **Simulation Mode** to observe packet flow between devices
+
+3. Open `DNS_DHCP_by_Static_routing.pkt` in Packet Tracer
+
+4. Switch to **Simulation Mode** to watch packets travel between sites in real time
 
 ---
 
-## ✅ Testing & Verification
+## ✅ Testing Checklist
 
-| Test | Command | Expected Result |
-|------|---------|-----------------|
-| Ping between sites | `ping 50.50.50.2` from PC0 | Reply received |
-| DHCP assignment | Check PC IP config | Auto-assigned from DHCP pool |
-| DNS resolution | `nslookup www.campus.com` | Returns Web Server IP |
-| Web access | Open browser → `www.campus.com` | Web page loads |
+| Test | How to Test | Expected Result |
+|------|-------------|-----------------|
+| Cross-site ping | `ping 50.50.50.x` from PC0 | Successful replies |
+| DHCP lease | Open PC → Desktop → IP Config | Auto-assigned IP |
+| DNS resolution | PC browser → `www.campus.com` | Page loads |
+| Web access | PC browser → `10.10.10.2` | Page loads via IP too |
 
 ---
 
@@ -130,32 +132,28 @@ Router0(config)# ip route 50.50.50.0 255.0.0.0 <WAN-next-hop>
 ```
 Campus-Network-DHCP-DNS/
 │
-├── DNS_DHCP_by_Static_routing.pkt   # Cisco Packet Tracer simulation file
-├── README.md                         # Project documentation
-└── LICENSE                           # License information
+├── DNS_DHCP_by_Static_routing.pkt   # Packet Tracer simulation file
+├── topology (2).png                  # Network topology screenshot
+├── README.md                         # This file
+└── LICENSE                           # MIT License
 ```
 
 ---
 
-## 🎯 Learning Outcomes
+## 🛠️ Built With
 
-- Designed a hierarchical 3-site campus network topology
-- Configured DHCP for dynamic IP assignment across multiple subnets
-- Implemented DHCP relay (`ip helper-address`) for cross-subnet DHCP
-- Set up DNS for domain name resolution across the network
-- Configured static routes for inter-site WAN connectivity
-- Hosted and accessed a web server across different network segments
+![Cisco Packet Tracer](https://img.shields.io/badge/Cisco-Packet%20Tracer-1BA0D7?style=for-the-badge&logo=cisco&logoColor=white)
+![Networking](https://img.shields.io/badge/Networking-DHCP%20%7C%20DNS%20%7C%20Routing-0D9373?style=for-the-badge)
 
 ---
 
 ## 👤 Author
 
 **Wahid Ali**
-BS Computer Science — SZABIST
 GitHub: [@wahidali-glitch](https://github.com/wahidali-glitch)
 
 ---
 
 ## 📄 License
 
-This project is licensed under the terms of the [LICENSE](LICENSE) file included in this repository.
+This project is licensed under the [MIT License](LICENSE).
